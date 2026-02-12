@@ -16,6 +16,10 @@ set(GLAD_SOURCES
 # 실행 파일
 add_executable(graphics
     src/main.cpp
+    src/shaderClass.cpp
+    src/VAO.cpp
+    src/VBO.cpp
+    src/EBO.cpp
     ${GLAD_SOURCES}
 )
 
