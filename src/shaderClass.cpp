@@ -26,15 +26,18 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile){
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER); // GPU 메모리에 Vertex Shader를 담을 슬롯을 생성하여 슬롯 번호를 할당한다.
     glShaderSource(vertexShader, 1, &vertexSource, NULL); // 슬롯에 셰이더파일 소스코드를 연결한다. (셰이더 슬롯, 담을 문자열 개수, 문자열 포인터 배열)
     glCompileShader(vertexShader); // GPU 내부에서 소스코드를 이해하도록 컴파일한다.
+    compileError(vertexShader, "VERTEX");
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER); // GPU 메모리에 fragment Shader를 담을 슬롯을 생성하고 슬롯번호를 할당한다.
     glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
     glCompileShader(fragmentShader);
+    compileError(fragmentShader, "FRAGMENT");
 
     ID = glCreateProgram(); // 만든 셰이더들을 하나로 합쳐주는 프로그램 슬롯을 만든다.
     glAttachShader(ID, vertexShader); // 프로그램 슬롯에 셰이더를 연결한다.
     glAttachShader(ID, fragmentShader);
     glLinkProgram(ID); // 프로그램에 연결된 셰이더 슬롯들을 하나로 링크해 실행 가능한 프로그램으로 만든다.
+    compileError(ID, "PROGRAM");
 
     glDeleteShader(vertexShader); // GPU에 올라간 셰이더 슬롯들을 해제한다.
     glDeleteShader(fragmentShader);
@@ -46,4 +49,24 @@ void Shader::Activate(){
 
 void Shader::Delete(){
     glDeleteProgram(ID); // 프로그램 자원 해제
+}
+
+// Shader 컴파일/링크 에러 체크 후 출력.
+void Shader::compileError(unsigned int shader, const char* type){ // 셰이더 슬롯 ID, 셰이더 종류
+    GLint hasCompiled; // 컴파일 성공 여부
+    char infoLog[1024]; // 에러 메세지 저장 버퍼
+    if (type != "PROGRAM"){
+        // 타입이 프로그램이 아니면, 셰이더 컴파일 상태 확인
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &hasCompiled); // 컴파일 결과 hasCompiled에 저장.
+        if(hasCompiled == GL_FALSE){
+            glGetShaderInfoLog(shader, 1024, NULL, infoLog); // 실패시 오류 메세지 infoLog에 저장.
+            std::cout << "SHADER_COMPILATION_ERROR for : "<<type<<"| INFO : "<<infoLog<<"\n"<<std::endl;
+        }
+    } else {
+        glGetProgramiv(shader, GL_COMPILE_STATUS, &hasCompiled);
+        if(hasCompiled == GL_FALSE){
+            glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+            std::cout << "SHADER_LINKING_ERROR for : "<<type<<"| INFO : "<<infoLog<<"\n"<<std::endl;
+        }
+    }
 }

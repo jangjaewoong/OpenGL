@@ -7,15 +7,17 @@
 #include "VAO.h"
 
 GLfloat vertices[] = { // float 형식을 담는 배열. OpenGL의 float는 기존 float와 차지하는 크기가 다르기 때문에 GLfloat를 사용한다.
-        -0.5f, -0.5f, 0.0f, // Lower Left Corner
-        0.0f, -0.5f, 0.0f, // Inner donw
-        -0.25f,0.0f,0.0f, // Inner Left
-        0.5f, -0.5f, 0.0f, // Lower Right Corner
-        0.25f, 0.0f, 0.0f, // Inner Right
-        0.0f, 0.5f, 0.0f  // Upper Corner
+        //    Coordinates |       Colors
+        -0.5f, -0.5f, 0.0f, 0.8f, 0.3f, 0.02f,  // Lower Left Corner
+        0.0f, -0.5f, 0.0f, 0.8f, 0.3f, 0.02f,   // Inner down
+        -0.25f, 0.0f, 0.0f, 0.9f, 0.45f, 0.17f, // Inner Left
+        0.5f, -0.5f, 0.0f, 0.8f, 0.3f, 0.02f,   // Lower Right Corner
+        0.25f, 0.0f, 0.0f, 0.9f, 0.45f, 0.17f,  // Inner Right
+        0.0f, 0.5f, 0.0f, 1.0f, 0.6f, 0.32f     // Upper Corner
         // OpenGL은 NDC(Normalized Device Coordinate)라는 좌표 정규화 방식을 이용하는데 -1~1까지의 값을 window화면 비율에 맞춰 재설정 해준다.
     };
 
+// OpenGL에서 primitive가 각 정점의 색상 데이타를 가지고 있으면 자동으로 그라데이션을 적용시킨다.(보간)
 GLuint indices[] = {
         0, 1, 2,
         1, 3, 4,
@@ -52,17 +54,20 @@ int main()
     VBO VBO1(vertices, sizeof(vertices));
     EBO EBO1(indices, sizeof(indices));
 
-    VAO1.LinkVBO(VBO1, 0);
+    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 6*sizeof(float), (void*)0);
+    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 6*sizeof(float), (void*)(3*sizeof(float))); // Color 정보는 layout 1에 보내고 offset은 3, stride는 6으로 설정.
     
     VAO1.UnBind();  
     VBO1.UnBind();
     //EBO1.UnBind(); //VAO 가 UnBind 되기전에 EBO 를 unBind 하면 오류 발생
     
-
+    GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale"); // VAO를 사용하지않고 shader에 접근할 수 있는 방법. 세이더 프로그램의 슬롯(ID)에서 유니폼 변수이름으로 위치를 가져옴.
+    // 정점마다 다른 값을 사용해야 할 때 (위치, 색상, 텍스쳐 좌표 등)는 VAO를 사용하고, 모든 정점에 같은 값을 적용하려면 Uniform을 사용
     while(!glfwWindowShouldClose(window)){
         glClearColor(0.0f,0.0f,0.0f,1.0f); // 배경을 채울 색상 설정
         glClear(GL_COLOR_BUFFER_BIT); // 위에서 설정한 색상으로 화면을 밀어버림. 화면에 변화가 있을 때마다 호출해줘야 잔상이 남지 않음.
         shaderProgram.Activate();
+        glUniform1f(uniID, 0.5f); // 원하는 셰이더 프로그램을 활성화 한 뒤에 값을 전달.
         VAO1.Bind();
         glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT,0); // 인덱스를 그리는 함수
         glfwSwapBuffers(window); // BackBuffer에서 그린 후 다 그려지면 FrontBuffer와 변경해서 다 그려진 결과만 화면에 뜨게끔.
