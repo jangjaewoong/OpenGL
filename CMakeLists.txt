@@ -20,12 +20,15 @@ add_executable(graphics
     src/VAO.cpp
     src/VBO.cpp
     src/EBO.cpp
+    src/stb.cpp
+    src/Texture.cpp
     ${GLAD_SOURCES}
 )
 
 # 헤더 경로
 target_include_directories(graphics PRIVATE
     external/glad/include
+    external/stb
     ${OPENGL_INCLUDE_DIR}
 )
 
@@ -35,6 +38,10 @@ target_link_libraries(graphics PRIVATE
     ${OPENGL_LIBRARIES}
     ${CMAKE_DL_LIBS}
 )
+
+# 리소스 폴더를 빌드 디렉토리로 복사
+file(COPY ${CMAKE_SOURCE_DIR}/resources 
+     DESTINATION ${CMAKE_BINARY_DIR})
 
 # 컴파일 옵션
 target_compile_options(graphics PRIVATE -Wall)
