@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # OpenGL과 GLFW 찾기
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)  # apt로 설치한 GLFW 찾기
-
+find_package(glm CONFIG REQUIRED)
 # GLAD 소스
 set(GLAD_SOURCES
     external/glad/src/glad.c

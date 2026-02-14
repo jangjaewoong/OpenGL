@@ -10,9 +10,13 @@ out vec3 color; // Fragment에 내보낼 변수
 out vec2 texCoord; // 텍스쳐 좌표 값
 uniform float scale;
 
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 proj;
+
 void main()
 {
-   gl_Position = vec4(aPos * scale, 1.0); //gl_Position은 미리 정해진 키워드로서 정점의 위치를 이용하기 위해 사용
+   gl_Position = proj * view * model * vec4(aPos, 1.0f); //gl_Position은 미리 정해진 키워드로서 정점의 위치를 이용하기 위해 사용, vec4를 사용하는 이유는 동차 좌표계를 사용하기 때문
    color = aColor;
    texCoord = aTex;
 }

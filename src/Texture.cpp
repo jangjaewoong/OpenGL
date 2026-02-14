@@ -35,7 +35,7 @@ Texture::Texture(const char* image, GLenum texType, GLenum slot, GLenum pixelTyp
 
 }
 
-void Texture::texUnit(Shader shader, const char* uniform, GLuint unit){
+void Texture::texUnit(Shader &shader, const char* uniform, GLuint unit){
     GLuint tex0Uni = glGetUniformLocation(shader.ID, uniform); // shader 프로그램에서 tex0 이름의 uniform 변수 위치 가져옴
     shader.Activate(); // shader 프로그램을 활성 상태로 만듬. uniform 값 설정 전 반드시 호출 필요
     glUniform1i(tex0Uni, unit); // 위에서 활성화 한 0번 유닛(GL_TEXTURE0) 번호 전달
