@@ -22,6 +22,7 @@ add_executable(graphics
     src/EBO.cpp
     src/stb.cpp
     src/Texture.cpp
+    src/Camera.cpp
     ${GLAD_SOURCES}
 )
 

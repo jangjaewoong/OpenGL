@@ -12,6 +12,7 @@
 #include "EBO.h"
 #include "VAO.h"
 #include "Texture.h"
+#include "Camera.h"
 
 const unsigned int width = 800;
 const unsigned int height = 800;
@@ -74,51 +75,26 @@ int main()
     VBO1.UnBind();
     //EBO1.UnBind(); //VAO 가 UnBind 되기전에 EBO 를 unBind 하면 오류 발생
     
-    GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale"); // VAO를 사용하지않고 shader에 접근할 수 있는 방법. 세이더 프로그램의 슬롯(ID)에서 유니폼 변수이름으로 위치를 가져옴.
-    // 정점마다 다른 값을 사용해야 할 때 (위치, 색상, 텍스쳐 좌표 등)는 VAO를 사용하고, 모든 정점에 같은 값을 적용하려면 Uniform을 사용
+    
     
     Texture backGround("resources/Textures/brick.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_UNSIGNED_BYTE);
     
     backGround.texUnit(shaderProgram, "tex0", 0);
-    
-    float rotation = 0.0f;
-    double prevTime = glfwGetTime(); //GLFW 라이브러리가 초기화된 이후 경과한 시간을 초 단위로 반환하는 함수입니다.
-
+   
     glEnable(GL_DEPTH_TEST);
+
+    Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
 
     while(!glfwWindowShouldClose(window)){
         glClearColor(0.0f,0.0f,0.0f,1.0f); // 배경을 채울 색상 설정
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // 위에서 설정한 색상으로 화면을 밀어버림. 화면에 변화가 있을 때마다 호출해줘야 잔상이 남지 않음.
         shaderProgram.Activate();
-        
-        double crntTime = glfwGetTime();
-        if(crntTime - prevTime >= 1/ 60){
-            rotation += 0.5f;
-            // 360도를 넘으면 0으로 리셋
-            if(rotation >= 360.0f){
-                rotation -= 360.0f;  
-            }
-            prevTime = crntTime;
-        }
-
-        glm::mat4 model = glm::mat4(1.0f); // 4x4 단위행렬 생성
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 proj = glm::mat4(1.0f);
-
-        model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f,1.0f,0.0f)); // 기존행렬, 회전각, 회전축 | OpenGL은 라디안을 이용하고 53도 = 1라디안이다.
-        view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f)); // Z축은 우리쪽으로 향할때 양수이고 멀어질 때 음수이다. 
-        const float aspectRatio = (float)width / (float)height; 
-        proj = glm::perspective(glm::radians(60.0f), aspectRatio, 0.1f, 100.0f); // 거리가 0.1보다 가까우면 잘리고, 100보다 멀리있으면 잘리게 설정. 원근 투영 행렬 생성 (시야각, 종횡비(윈도우와 같게끔),)
-        
-        int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");  // VertexShader에 model이라는 이름의 uniform 변수 위치 받아옴
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model)); // 해당 위치 변수에 모델 행렬 할당
-        int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        int projLoc = glGetUniformLocation(shaderProgram.ID, "proj");
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
+        camera.Inputs(window);
+        camera.updateMatrix(45.0f, 0.1f, 100.0f);
+        camera.Matrix(shaderProgram, "camMatrix");
         
         
-        glUniform1f(uniID, 1.5f); // 원하는 셰이더 프로그램을 활성화 한 뒤에 값을 전달.
+  
         backGround.Bind();
         VAO1.Bind();
         glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT,0); // 인덱스를 그리는 함수, indices 개수만큼 전달해야됨.
